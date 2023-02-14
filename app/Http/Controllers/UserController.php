@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\State;
 use App\Models\City;
 use App\Models\Skill;
+use Illuminate\Support\Facades\Storage;
 
 
 
@@ -20,7 +21,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::where('status',1)->get();
         $i = 1;
         return view('users.index', compact('users', 'i'));
     }
@@ -45,16 +46,50 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //  dd($request->all());
+        // dd($request->input('city'));
         $request->validate([
             'name' => 'required',
             'dob' => 'required',
             'gender' => 'required',
             'email' => 'required|email|unique:users',
+            'mobile_no' => 'required|numeric|digits:10',
+            'image' => 'required',
+            
         ]);
-      
-        User::create($request->all());
-        // dd(1);
+        $imageName = time().'.'.$request->image->extension();
+        $request->image->move(public_path('images'), $imageName);
+
+        $files = [];
+        if ($request->hasFile('cert_images')){
+            foreach ($request->file('cert_images') as $file){
+                $fileName = time().'_'.$file->getClientOriginalName();
+                $file->move(public_path('uploads'), $fileName);
+                $files[] = $fileName;
+            }
+        }
+       
+        $user = new User;
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->dob = $request->input('dob');
+        $user->gender = $request->input('gender');
+        $user->profession = $request->input('profession');
+        $user->mobile_no = $request->input('mobile_no');
+        $user->state_id = $request->input('state');
+        $user->city_id = $request->input('city');
+        $user->image = $imageName;
+        $user->status = 1;
+        $user->have_certificates = json_encode($files);
+        $user->have_skills = json_encode($request->input('skills'));
+        $user->edu_year = json_encode($request->input('year'));
+        $user->degree = json_encode($request->input('degree'));
+        $user->company_name = $request->input('companyName') ?? null;
+        $user->date_of_joining = $request->input('doj') ?? null;
+        $user->business_name = $request->input('bussinessName') ?? null;
+        $user->location = $request->input('location') ?? null;
+        $user->save();
+
+        // $user->saveUser($request->all()->with($imageName));
         return redirect()->route('users.index')
                         ->with('success','User created successfully.');
     }
@@ -68,8 +103,25 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::find($id);
-        // dd($user);
-        return view('users.show', compact('user'));
+        $get_state = State::find($user->state_id);
+        $state_name = $get_state['name'];
+        $get_city = City::find($user->city_id);
+        $city_name = $get_city['name'];
+        $files = json_decode($user->have_certificates, true);
+        // dd($files);
+        $years = json_decode($user->edu_year, true);
+        $degrees = json_decode($user->degree, true);
+        $pairs = [];
+        for ($i = 0; $i < count($years); $i++) {
+            $pairs[] = [$years[$i], $degrees[$i]];
+        }
+        // dd($pairs);
+        
+        $skills = json_decode($user->have_skills, true); 
+        // dd($years);
+
+
+        return view('users.show', compact('user', 'years','degrees','files', 'skills', 'pairs','state_name', 'city_name' ));
     }
 
     /**
@@ -81,7 +133,9 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        return view('users.edit', compact('user'));
+        $states = State::all();
+        $skills = Skill::all();
+        return view('users.edit', compact('user', 'states', 'skills'));
     }
 
     /**
@@ -93,7 +147,52 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::find($id);
+
+        $request->validate([
+            'name' => 'required',
+            'dob' => 'required',
+            'gender' => 'required',
+            'email' => 'required|email|unique:users,email,'. $user->id, 
+            'mobile_no' => 'required|numeric|digits:10',
+            'image' => 'required',
+
+        ]);
+        $imageName = time().'.'.$request->image->extension();
+        $request->image->move(public_path('images'), $imageName);
+
+        $files = [];
+        if ($request->hasFile('cert_images')){
+            foreach ($request->file('cert_images') as $file){
+                $fileName = time().'_'.$file->getClientOriginalName();
+                $file->move(public_path('uploads'), $fileName);
+                $files[] = $fileName;
+            }
+        }
+        
+        $user = User::find($id);
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->dob = $request->input('dob');
+        $user->gender = $request->input('gender');
+        $user->profession = $request->input('profession');
+        $user->mobile_no = $request->input('mobile_no');
+        $user->state_id = $request->input('state');
+        $user->city_id = $request->input('city');
+        $user->image = $imageName;
+        $user->have_certificates = json_encode($files);
+        $user->have_skills = json_encode($request->input('skills'));
+        $user->edu_year = json_encode($request->input('year'));
+        $user->degree = json_encode($request->input('degree'));
+        $user->company_name = $request->input('companyName') ?? null;
+        $user->date_of_joining = $request->input('doj') ?? null;
+        $user->business_name = $request->input('bussinessName') ?? null;
+        $user->location = $request->input('location') ?? null;
+        $user->save();
+
+        // $user->saveUser($request->all()->with($imageName));
+        return redirect()->route('users.index')
+                        ->with('success','User Updated successfully.');
     }
 
     /**
@@ -104,32 +203,20 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
-    }
+        // dd($id);
+        $user = User::findOrFail($id);
+        $user->status = 0;
+        $user->save();
+        return redirect()->route('users.index');
+    }  
 
-    public function updateProfile(Request $request)
-{
-    // validate the form inputs
-    $validatedData = $request->validate([
-        // other validation rules
-        'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    ]);
+    public function delete($id)
+    {
+        
+        $user = User::findOrFail($id);
+        $user->status = 0;
+        $user->save();
+        return redirect()->route('users.index');
+    }  
 
-    // get the image file
-    $image = $request->file('profile_ picture');
-
-    // generate a unique file name
-    $fileName = time().'.'.$image->getClientOriginalExtension();
-
-    // save the image to the public/images folder
-    $image->move(public_path('images'), $fileName);
-
-    // save the file name to the database
-    // $user = Auth::user();
-    $user->profile_picture = $fileName;
-    $user->save();
-
-    // redirect the user back with a success message
-    return redirect()->back()->with('success', 'Profile picture updated successfully');
-    }   
 }

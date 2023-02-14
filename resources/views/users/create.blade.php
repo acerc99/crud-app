@@ -18,7 +18,7 @@
     </div>
 @endif
 
-        <form action="{{ route('users.store') }}" method="POST">
+        <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" >
             @csrf
           <div class="card" style="border-radius: 15px;">
             <div class="card-body text-center">
@@ -27,10 +27,9 @@
                   class="rounded-circle img-fluid" style="width: 100px;" />
               </div>
 
-              <div class="form-group">
-                <label for="profile_picture">Profile Picture:</label>
-                <input type="file" name="profile_picture" id="profile_picture" class="form-control">
-                <button type="submit">Submit</button>
+              <div class="form-group mb-3">
+                <label for="image">Profile Picture:</label>
+                <input type="file" name="image" id="image" class="form-control">
               </div>
 
               <div class="d-flex justify-content-between mb-3">
@@ -65,16 +64,14 @@
               
               <div class="d-flex justify-content-between mb-3">
                 <label for="city">Choose a city:</label>
-
                 <select id="city" name="city"></select>
-
               </div>
               
               <div class="d-flex justify-content-between mb-3">
                 <span>Profession:</span>
-                <input type="radio" name="option" value="option1" id="option1">
+                <input type="radio" name="profession" value="1" id="option1">
                 <label for="option1">Salaried</label>
-                <input type="radio" name="option" value="option2" id="option2">
+                <input type="radio" name="profession" value="2" id="option2">
                 <label for="option2">Self-employed</label>
               </div>
 
@@ -106,16 +103,16 @@
                 <label for="skills">Skills:</label>
 
                 <select class="js-example-basic-multiple" name="skills[]" multiple="multiple">
-                    <option value="1">java</option>
-                    <option value="2">python</option>
-                    <option value="3">c++</option>
-                    <option value="4">javascript</option>
-                    <option value="5">c#</option>
-                    <option value="6">php</option>
-                    <option value="7">ruby</option>
-                    <option value="8">swift</option>
-                    <option value="9">go</option>
-                    <option value="10">kotlin</option>
+                    <option value="java">java</option>
+                    <option value="python">python</option>
+                    <option value="c++">c++</option>
+                    <option value="javascript">javascript</option>
+                    <option value="c#">c#</option>
+                    <option value="php">php</option>
+                    <option value="ruby">ruby</option>
+                    <option value="swift">swift</option>
+                    <option value="go">go</option>
+                    <option value="kotlin">kotlin</option>
                   </select>
 
                 </div>
@@ -133,18 +130,23 @@
                       </div>
                     </div>
                 </div>
-                <button id="add-education-section" type="button" class="btn btn-primary">Add More</button>
+                <button id="add-education-section" type="button" class="btn btn-primary mt-3">Add More</button>
 
+                <div class="form-group mt-3">
+                  <label for="cert_images">Certificates:</label>
+                  <input type="file" name="cert_images[]" id="cert_images" class="form-control" multiple>
+                </div>
 
-
-
-              <div class="d-flex justify-content-between mb-3">
+                  
+              <div class="d-flex justify-content-between mb-3 mt-3">
                 <label for="email">email:</label>
                 <input type="email" class="form-control" id="email" name="email">
-              </div><div class="d-flex justify-content-between mb-3">
-                <label for="mobile">mobile:</label>
-                <input type="text" class="form-control" id="mobile" name="mobile">
-
+              </div>
+              
+              <div class="d-flex justify-content-between mb-3">
+                <label for="mobile_no">mobile:</label>
+                <input type="text" class="form-control" id="mobile_no" name="mobile_no">
+              </div>
               <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
               
             </div>
@@ -183,7 +185,7 @@
       });
     });
 
-    $("input[name='option']").change(function() {
+    $("input[name='profession']").change(function() {
             if ($("#option1").is(":checked")) {
                 $("#salaried1").show();
                 $("#self1").hide();
@@ -205,6 +207,7 @@
     
     $('#add-education-section').click(function() {
     $('#education-container').append('<div class="education-section mt-3">\
+      <div id="education-section">\
       <div class="form-group">\
         <label for="year">Year:</label>\
         <input type="text" class="form-control" name="year[]">\
@@ -213,10 +216,30 @@
         <label for="degree">Degree:</label>\
         <input type="text" class="form-control" name="degree[]">\
       </div>\
-    </div>');
-    }); 
+      <button id="remove-button" type="button" class="btn btn-secondary">Remove</button>\
+    </div>\
+      </div>');
+    });
+
+    $('.add').click(function() {
+ 	    $(this).before('<div class="form-group">\
+        <label for="year">Year:</label>\
+        <input type="text" class="form-control" name="year[]">\
+      </div>\
+      <div class="form-group">\
+        <label for="degree">Degree:</label>\
+        <input type="text" class="form-control" name="degree[]">\
+      </div>\
+      <button id="remove-button" type="button" class="btn btn-secondary">Remove</button>\
+      ');
+    });
+
+    $(document).on('click','#remove-button',function() {
+ 	    $(this).parent('div').remove();
+    });
     
   });
   </script>
       
 @endsection
+

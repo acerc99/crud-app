@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('name');
             $table->date('dob');
             $table->string('gender');
-            $table->unsignedBigInteger('state_id')->nullable();
+            $table->string('state_id')->nullable();
             // $table->foreign('state_id')->references('id')->on('states')->onDelete('set null');
-            $table->unsignedBigInteger('city_id')->nullable();
+            $table->string('city_id')->nullable();
             // $table->foreign('city_id')->references('id')->on('cities');
             $table->tinyInteger('profession');
             $table->string('mobile_no', 10);

@@ -17,11 +17,25 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'email', 'dob', 'gender', 'profession', 'mobile_no', 'state_id', 'city_id'
     ];
+
+    public function saveUser($data)
+    {
+    
+        $this->name = $data['name'];
+        $this->email = $data['email'];
+        $this->dob = $data['dob'];
+        $this->gender = $data['gender'];
+        $this->profession = $data['profession'];
+        $this->mobile_no = $data['mobile_no'];
+        $this->state_id = $data['state'];
+        $this->city_id = $data['city'];
+        $this->image = $imageName;
+        $this->save();
+    }
 
     /**
      * The attributes that should be hidden for serialization.

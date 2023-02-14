@@ -31,7 +31,7 @@
             <td>{{ $user->name }}</td>
             <td>{{ $user->email }}</td>
             <td>
-                <form action="{{ route('users.destroy',$user->id) }}" method="POST">
+                <form action="{{ route('users.delete', $user->id) }}" method="POST">
    
                     <a class="btn btn-info" href="{{ route('users.show',$user->id) }}">View</a>
     

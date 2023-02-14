@@ -28,6 +28,11 @@ Route::resource('users', UserController::class);
 Route::get('/get-cities', 'App\Http\Controllers\CityController@getCities');
 Route::get('/get-skills', 'App\Http\Controllers\SkillController@getSkills');
 
+// Route::get('/users/{id}/delete', 'App\Http\Controllers\UserController@delete');
+
+Route::delete('/users/{id}', 'UserController@delete')->name('users.delete');
+// 
+
 // Route::get('/get-cities', [CityController::class, 'getCities']);
 
 
